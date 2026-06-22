@@ -1,0 +1,318 @@
+---
+title: "Getting started with tweedieDistr"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with tweedieDistr}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse  = TRUE,
+  comment   = "#>",
+  fig.width = 6,
+  fig.height = 4,
+  out.width = "90%",
+  fig.align  = "center"
+)
+```
+
+```{r setup}
+library(tweedieDistr)
+library(ggplot2)
+library(ggdist)
+```
+
+## Introduction
+
+The **Tweedie distribution** with power parameter $p \in (1, 2)$ is a member
+of the exponential dispersion model family that naturally mixes a point mass at
+zero with a continuous positive component. It is particularly useful for
+**intermittent demand** data, insurance loss modelling, and any other setting
+where exact zeros co-exist with strictly positive observations.
+
+`tweedieDistr` implements the distribution in two complementary styles:
+
+1. **Base-R `stats` interface** — `dtweedie()`, `ptweedie()`, `qtweedie()`,
+   `rtweedie()` — following the same conventions as `dnorm()`, `pnorm()`, etc.
+2. **`distributional` interface** — `dist_tweedie()` — returning a fully
+   featured distributional object that works seamlessly with tidy forecasting
+   packages such as [`fable`](https://fable.tidyverts.org/) and the
+   [`ggdist`](https://mjskay.github.io/ggdist/) plotting layer.
+
+---
+
+## The Tweedie distribution
+
+### Compound Poisson--Gamma representation
+
+A Tweedie variable $X$ with parameters $(\mu, \phi, p)$ can be written as a
+compound sum
+
+$$X = \sum_{i=1}^{N} G_i, \qquad N \sim \mathrm{Poisson}(\lambda),
+\quad G_i \overset{\text{iid}}{\sim} \mathrm{Gamma}(\alpha, \beta),$$
+
+with
+
+$$\lambda = \frac{\mu^{2-p}}{\phi(2-p)}, \qquad
+\alpha = \frac{2-p}{p-1}, \qquad
+\beta = \frac{1}{\phi(p-1)\mu^{p-1}}.$$
+
+When $N = 0$ the sum is defined as $X = 0$, so the distribution has a point
+mass at zero with probability
+
+$$P(X = 0) = e^{-\lambda}.$$
+
+For $x > 0$ the density is continuous and is evaluated via the series expansion
+of Dunn & Smyth (2005), implemented in C++ through Rcpp and RcppArmadillo.
+
+### Moments
+
+| Quantity | Formula |
+|---|---|
+| Mean | $\mu$ |
+| Variance | $\phi\mu^p$ |
+| Skewness | $p\sqrt{\phi}\,\mu^{p/2 - 1}$ |
+| Excess kurtosis | $p(2p-1)\phi\,\mu^{p-2}$ |
+
+---
+
+## The `stats`-style interface
+
+### Density — `dtweedie()`
+
+```{r density-basic}
+d <- dist_tweedie(mean = 3, dispersion = 0.8, power = 1.5)
+
+tibble::tibble(dist = d) |>
+  ggplot(aes(xdist = dist)) +
+  stat_slab(fill = "#2171b5", alpha = 0.75, n = 1001) +
+  labs(x = "x", y = "Density",
+       title = expression(paste("Tweedie density  (",
+                                mu, "=3, ", phi, "=0.8, p=1.5)"))) +
+  theme_minimal()
+```
+
+The spike at $x = 0$ reflects the point mass $P(X = 0) = e^{-\lambda}$; the
+continuous slab for $x > 0$ is the Gamma mixture component.
+
+The `log` argument returns log-densities, which is numerically more stable for
+likelihood computations:
+
+```{r density-log}
+dtweedie(c(0, 1, 2, 5), mean = 3, dispersion = 0.8, power = 1.5, log = TRUE)
+```
+
+### Effect of the power parameter
+
+```{r density-power, fig.cap="Tweedie density across power values."}
+powers <- c(1.2, 1.5, 1.8)
+
+tibble::tibble(
+  power = factor(paste0("p = ", powers), levels = paste0("p = ", rev(powers))),
+  dist  = dist_tweedie(mean = 3, dispersion = 0.8, power = powers)
+) |>
+  ggplot(aes(xdist = dist, y = power, fill = power)) +
+  stat_slab(alpha = 0.8, n = 1001) +
+  scale_fill_manual(values = c("#e41a1c", "#2171b5", "#4daf4a")) +
+  labs(x = "x", y = NULL, fill = NULL,
+       title = expression(paste("Effect of p  (", mu, "=3, ", phi, "=0.8)"))) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+Higher $p$ shifts more probability mass toward zero and produces a heavier
+right tail.
+
+### Distribution function — `ptweedie()`
+
+```{r cdf}
+q_grid <- seq(0, 8, by = 0.5)
+cdf    <- ptweedie(q_grid, mean = 3, dispersion = 0.8, power = 1.5)
+cbind(q = q_grid, CDF = round(cdf, 4))
+```
+
+The standard `lower.tail` and `log.p` arguments are supported, e.g. to
+compute $P(X > 4)$:
+
+```{r cdf-uppertail}
+ptweedie(4, mean = 3, dispersion = 0.8, power = 1.5, lower.tail = FALSE)
+```
+
+### Quantile function — `qtweedie()`
+
+`qtweedie()` uses a hybrid Newton--Raphson / bisection algorithm.
+
+```{r quantile}
+probs <- c(0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99)
+qtweedie(probs, mean = 3, dispersion = 0.8, power = 1.5)
+```
+
+The boundary cases are handled correctly:
+
+```{r quantile-boundary}
+qtweedie(c(0, 1), mean = 3, dispersion = 0.8, power = 1.5)
+```
+
+### Random generation — `rtweedie()`
+
+`rtweedie()` uses the exact compound Poisson--Gamma representation.
+
+```{r rtweedie}
+set.seed(2025)
+samples <- rtweedie(500, mean = 3, dispersion = 0.8, power = 1.5)
+
+ggplot() +
+  geom_histogram(aes(x = samples, y = after_stat(density)),
+                 bins = 30, fill = "#bdd7e7", colour = "white") +
+  geom_function(fun = \(x) dtweedie(x, mean = 3, dispersion = 0.8, power = 1.5),
+                xlim = c(1e-4, max(samples)),
+                colour = "#2171b5", linewidth = 1) +
+  labs(x = "x", y = "Density",
+       title = "rtweedie() samples vs theoretical density") +
+  theme_minimal()
+```
+
+### Vectorised arguments
+
+All four functions recycle their arguments in the same way as base R:
+
+```{r vectorised-dpqr}
+# density for three different means at x = 2
+dtweedie(2, mean = c(1, 3, 5), dispersion = 0.8, power = 1.5)
+
+# quantile for two distributions simultaneously
+qtweedie(0.9, mean = c(2, 5), dispersion = c(0.5, 1.0), power = 1.5)
+```
+
+---
+
+## The `distributional` interface
+
+`dist_tweedie()` wraps the distribution parameters in a
+[`distributional`](https://github.com/mitchelloharawild/distributional) object.
+This enables a unified, pipe-friendly API and integrates directly with
+[`ggdist`](https://mjskay.github.io/ggdist/) for plotting, as well as packages
+like `fable` that use `distributional` objects to represent forecast
+distributions.
+
+### Creating a distribution object
+
+```{r dist-create}
+d <- dist_tweedie(mean = 3, dispersion = 0.8, power = 1.5)
+d
+```
+
+### Moments
+
+```{r dist-moments}
+mean(d)
+distributional::variance(d)
+distributional::skewness(d)
+distributional::kurtosis(d)
+```
+
+### Density, CDF, and quantiles
+
+```{r dist-dpq}
+density(d, at = c(0, 1, 2, 3, 5))
+distributional::cdf(d, q = c(1, 3, 5))
+quantile(d, p = c(0.25, 0.5, 0.75, 0.9))
+```
+
+### Random generation
+
+```{r dist-generate}
+set.seed(2025)
+distributional::generate(d, times = 10)
+```
+
+### Support
+
+```{r dist-support}
+distributional::support(d)
+```
+
+### Plotting with `ggdist`
+
+`dist_tweedie()` objects integrate directly with `ggdist` via the `xdist`
+aesthetic. `stat_halfeye()` shows the density slab together with a median point
+and 66 %/95 % credible intervals.
+
+```{r dist-halfeye}
+tibble::tibble(dist = d) |>
+  ggplot(aes(xdist = dist)) +
+  stat_halfeye(fill = "#2171b5", alpha = 0.75, n = 1001) +
+  labs(x = "x", y = NULL,
+       title = expression(paste("dist_tweedie  (",
+                                mu, "=3, ", phi, "=0.8, p=1.5)"))) +
+  theme_minimal()
+```
+
+### Vectorised distribution objects
+
+`dist_tweedie()` accepts vectors of parameters, returning one distribution
+object per row. This is useful when each observation in a dataset has different
+fitted parameters — and it pairs naturally with `ggdist` ridge plots.
+
+```{r dist-vec}
+d_vec <- dist_tweedie(
+  mean       = c(1, 3, 5),
+  dispersion = c(0.5, 0.8, 1.2),
+  power      = c(1.3, 1.5, 1.8)
+)
+d_vec
+
+mean(d_vec)
+quantile(d_vec, p = 0.9)
+distributional::variance(d_vec)
+```
+
+```{r dist-vec-plot, fig.cap="Ridge plot of three dist_tweedie distributions."}
+labs <- c("(1, 0.5, 1.3)", "(3, 0.8, 1.5)", "(5, 1.2, 1.8)")
+tibble::tibble(
+  label = factor(labs, levels = rev(labs)),
+  dist  = d_vec
+) |>
+  ggplot(aes(xdist = dist, y = label, fill = label)) +
+  stat_slab(alpha = 0.8, n = 1001) +
+  scale_fill_manual(values = c("#e41a1c", "#2171b5", "#4daf4a")) +
+  labs(x = "x", y = expression(paste("(", mu, ", ", phi, ", p)")), fill = NULL,
+       title = "Vectorised dist_tweedie distributions") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+---
+
+## Numerical accuracy
+
+The density is computed via the weighted series expansion of Dunn & Smyth
+(2005) in a numerically stable form using the log-sum-exp trick. The
+implementation is validated against the `tweedie` package (Dunn, 2023), which
+provides an independent reference implementation.
+
+```{r accuracy, eval = requireNamespace("tweedie", quietly = TRUE)}
+x_test <- c(0, 0.5, 1, 2, 5)
+our    <- dtweedie(x_test, mean = 2, dispersion = 0.8, power = 1.5)
+ref    <- tweedie::dtweedie(x_test, mu = 2, phi = 0.8, power = 1.5)
+
+cbind(x = x_test, tweedieDistr = round(our, 8), tweedie_pkg = round(ref, 8),
+      abs_diff = format(abs(our - ref), scientific = TRUE, digits = 3))
+```
+
+---
+
+## References
+
+Dunn, P. K. (2023). *tweedie: Tweedie Exponential Family Models*. R package
+version 2.3.5. <https://CRAN.R-project.org/package=tweedie>.
+
+Dunn, P. K., & Smyth, G. K. (2005). Series evaluation of Tweedie exponential
+dispersion model densities. *Statistics and Computing*, 15(4), 267--280.
+<https://doi.org/10.1007/s11222-005-4070-y>.
+
+Jørgensen, B. (1987). Exponential dispersion models. *Journal of the Royal
+Statistical Society, Series B*, 49(2), 127--162.
+<https://doi.org/10.1111/j.2517-6161.1987.tb01685.x>.
