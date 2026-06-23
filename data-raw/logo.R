@@ -115,7 +115,7 @@ dir.create('man/figures', showWarnings = FALSE, recursive = TRUE)
 sticker(
   gg,
   package  = 'tweedieDistr',
-  p_size   = 12,
+  p_size   = 14,
   p_color  = gold,
   p_family = pkg_font,
   p_y      = 1.5,
