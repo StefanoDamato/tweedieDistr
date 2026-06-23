@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# tweedieDistr <a href="https://github.com/StefanoDamato/tweedieDistr/"><img src="man/figures/logo.png" align="right" height="150" /></a>
+# tweedieDistr: fast evaluation of the Tweedie distribution <a href="https://github.com/StefanoDamato/tweedieDistr/"><img src="man/figures/logo.png" align="right" height="150" /></a>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/StefanoDamato/tweedieDistr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/StefanoDamato/tweedieDistr/actions/workflows/R-CMD-check.yaml)
@@ -22,29 +22,23 @@ knitr::opts_chunk$set(
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
 
-`tweedieDistr` provides density, distribution function, quantile function, and
-random generation for the **Tweedie distribution** under the compound
-Poisson--Gamma parameterisation with power parameter $p \in (1, 2)$. A
-[`distributional`](https://github.com/mitchelloharawild/distributional)-compatible
-constructor is also provided for use in tidy modelling workflows.
-
-The Tweedie family naturally combines a point mass at zero with a continuous
-positive component, making it well suited to **intermittent demand** data and
-any setting where exact zeros occur alongside strictly positive observations.
+`tweedieDistr` provides density, distribution function, quantile function, and random generation for the **Tweedie distribution** under the compound Poisson-Gamma parameterisation with power parameter $p \in (1, 2)$. 
+A [`distributional`](https://github.com/mitchelloharawild/distributional)-compatible constructor is also provided for use in tidy modelling workflows. 
+The Tweedie family naturally combines a point mass at zero with a continuous positive component, making it well suited to intermittent demand data and any setting where exact zeros occur alongside strictly positive observations.
 
 ## Exported functions
 
-| Function | Description |
-|---|---|
-| `dtweedie()` | Probability density function via the series expansion of Dunn & Smyth (2005), implemented in C++ for performance. |
-| `ptweedie()` | Cumulative distribution function using a truncated compound Poisson--Gamma summation. |
-| `qtweedie()` | Quantile function via a hybrid Newton--Raphson / bisection root-finding algorithm. |
-| `rtweedie()` | Random generation via the exact compound Poisson--Gamma representation. |
-| `dist_tweedie()` | [`distributional`](https://github.com/mitchelloharawild/distributional) object with full S3 method support. |
+We provide four `stats`-like functions:
 
-The `dist_tweedie()` object supports the standard `distributional` interface:
-`density()`, `CDF()`, `quantile()`, `generate()`, `mean()`, `variance()`,
-`distributional::skewness()`, `distributional::kurtosis()`, and
+* `dtweedie()`: probability density function via the series expansion of Dunn & Smyth (2005).
+* `ptweedie()`: cumulative distribution function using a truncated compound Poisson-Gamma summation.
+* `qtweedie()`: quantile function via Newton-Raphson algorithm, with a fallback to bisection.
+* `rtweedie()`: random generation via the exact compound Poisson--Gamma representation.
+
+We also provide a single constructor for a [`distributional`](https://github.com/mitchelloharawild/distributional) object:
+
+* `dist_tweedie()`: create the vectorised object for the Tweedie distribution. It supports the standard `distributional` interface:
+`density()`, `CDF()`, `quantile()`, `generate()`, `mean()`, `variance()`, `distributional::skewness()`, `distributional::kurtosis()`, and
 `distributional::support()`.
 
 ## Installation
@@ -75,17 +69,16 @@ arguments.
 library(tweedieDistr)
 
 # density at a few points
-dtweedie(c(0, 1, 2, 3), mean = 2, dispersion = 0.5, power = 1.5)
+dtweedie(c(0, 1, 2, 3), mean = 1, dispersion = 2, power = 1.2)
 
 # cumulative probabilities
-ptweedie(c(0, 1, 2, 3), mean = 2, dispersion = 0.5, power = 1.5)
+ptweedie(c(0, 1, 2, 3), mean = 1, dispersion = 2, power = 1.2)
 
 # quantiles
-qtweedie(c(0.25, 0.5, 0.75, 0.9), mean = 2, dispersion = 0.5, power = 1.5)
+qtweedie(c(0.25, 0.5, 0.75, 0.9), mean = 1, dispersion = 2, power = 1.2)
 
 # random samples
-set.seed(42)
-rtweedie(8, mean = 2, dispersion = 0.5, power = 1.5)
+rtweedie(4, mean = 1, dispersion = 2, power = 1.2)
 ```
 
 ### `distributional` interface
@@ -97,7 +90,7 @@ with tidy modelling frameworks such as
 ```{r distributional}
 library(tweedieDistr)
 
-d <- dist_tweedie(mean = 2, dispersion = 0.5, power = 1.5)
+d <- dist_tweedie(mean = 1, dispersion = 2, power = 1.2)
 d
 
 # moments
@@ -106,40 +99,38 @@ distributional::variance(d)
 distributional::skewness(d)
 distributional::kurtosis(d)
 
+# support
+distributional::support(d)
+
 # density and CDF
 density(d, at = c(0, 1, 2, 3))
-distributional::cdf(d, q = c(1, 2, 3))
+distributional::cdf(d, q = c(0, 1, 2, 3))
 
 # quantiles
-quantile(d, p = c(0.5, 0.9))
+quantile(d, p = c(0.25, 0.5, 0.75, 0.9))
 
 # random generation
-distributional::generate(d, times = 6)
+distributional::generate(d, times = 4)
 ```
 
-### Vectorised distributions
 
 `dist_tweedie()` supports vectorised arguments, so a whole column of
-distribution objects can be constructed at once — useful when each row of a
-forecast table has its own parameters.
+distribution objects can be constructed at once; this is crucial as it allows to use the distribution in the [tidyverts](https://tidyverts.org) forecasting pipelines, for instance.
 
 ```{r vectorised}
 library(tweedieDistr)
 
-d_vec <- dist_tweedie(
-  mean       = c(1, 2, 5),
-  dispersion = c(0.5, 1, 0.8),
-  power      = c(1.3, 1.5, 1.8)
+dist_tweedie(
+  mean       = c(1, 2, 0.5),
+  dispersion = c(2., 0.5, 1),
+  power      = c(1.2, 1.8, 1.5)
 )
-d_vec
-mean(d_vec)
-quantile(d_vec, p = 0.9)
 ```
 
 ## Mathematical background
 
-The Tweedie distribution with power $p \in (1, 2)$ is a compound Poisson--Gamma
-variable: $X = \sum_{i=1}^{N} G_i$, where
+The Tweedie distribution $$Y \sim \mathrm{Tw}(\mu, \phi, \rho)$$ with power $p \in (1, 2)$ is a compound Poisson-Gamma
+variable: $Y = \sum_{i=1}^{N} G_i$, where
 
 $$N \sim \mathrm{Poisson}(\lambda), \qquad
 G_i \sim \mathrm{Gamma}(\alpha, \beta),$$
