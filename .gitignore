@@ -21,6 +21,10 @@
 # RStudio files
 .Rproj.user/
 
+# Output of Rcpp 
+*.o
+*.win
+
 # produced vignettes
 vignettes/*.html
 vignettes/*.pdf
