@@ -6,9 +6,10 @@ Authors@R:
 Description: Provides density, distribution function, quantile function, and random
     generation for the Tweedie distribution under the compound Poisson-Gamma
     parameterisation with power parameter in (1, 2). The density is evaluated
-    using the series expansion of Dunn & Smyth (2005), implemented in C++ via
-    Rcpp and RcppArmadillo for performance. A 'distributional'-compatible
-    constructor is also provided for use in tidy modelling workflows.
+    using the series expansion of Dunn and Smyth (2005) <doi:10.1007/s11222-005-4070-y>,
+    implemented in C++ via 'Rcpp' and 'RcppArmadillo' for performance. A constructor
+    compatible with the distributional package is also provided for use in tidy
+    modelling workflows.
 License: LGPL (>= 3)
 URL: https://github.com/StefanoDamato/tweedieDistr
 BugReports: https://github.com/StefanoDamato/tweedieDistr/issues

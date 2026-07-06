@@ -4,9 +4,8 @@
 
 ## Comments
 
-This is the first CRAN submission of this package.
+This is a resubmission. Changes based on CRAN reviewer feedback:
 
-The package provides density, distribution function, quantile function, and
-random generation for the Tweedie distribution under the compound
-Poisson-Gamma parameterisation, implemented in C++ via Rcpp and
-RcppArmadillo.
+* Added single quotes around software names 'Rcpp' and 'RcppArmadillo' in
+  the Description field of DESCRIPTION.
+* Added a DOI reference for Dunn and Smyth (2005) in the Description field.
