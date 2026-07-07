@@ -27,6 +27,7 @@ LinkingTo:
     Rcpp,
     RcppArmadillo
 Suggests:
+    covr,
     ggdist,
     ggplot2,
     testthat (>= 3.0.0),
