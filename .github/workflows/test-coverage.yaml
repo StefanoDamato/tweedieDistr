@@ -24,4 +24,6 @@ jobs:
           needs: coverage
 
       - name: Upload coverage to Codecov
-        run: Rscript -e 'covr::codecov()'
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: Rscript -e 'covr::codecov(quiet = FALSE)'
