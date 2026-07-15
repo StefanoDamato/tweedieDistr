@@ -11,8 +11,8 @@
 status](https://www.r-pkg.org/badges/version/tweedieDistr)](https://CRAN.R-project.org/package=tweedieDistr)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![License:
-MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: LGPL
+v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 <!-- badges: end -->
 
 `tweedieDistr` provides density, distribution function, quantile
