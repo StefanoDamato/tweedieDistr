@@ -1,0 +1,13 @@
+^\.DS_Store$
+^\.Rproj\.user$
+^\.git$
+^\.github$
+^\.gitignore$
+^.*\.Rproj$
+^data-raw$
+^README\.Rmd$
+^time_tests$
+^cran-comments\.md$
+^LICENSE\.md$
+^peer_review\.html$
+^CRAN-SUBMISSION$

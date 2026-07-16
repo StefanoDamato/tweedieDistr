@@ -6,6 +6,9 @@
 .RData
 .RDataTmp
 
+# Project files
+*.Rproj
+
 # User-specific files
 .Ruserdata
 
@@ -21,10 +24,10 @@
 # RStudio files
 .Rproj.user/
 
-# Output of Rcpp 
+# Output of Rcpp
 src/*.so
 src/*.o
-src/*.win
+src/*.dll
 
 # produced vignettes
 vignettes/*.html
@@ -54,5 +57,7 @@ po/*~
 rsconnect/
 .DS_Store
 .Rhistory
-.Rbuildignore
 time_tests/
+
+# GitHub Actions
+/github/
