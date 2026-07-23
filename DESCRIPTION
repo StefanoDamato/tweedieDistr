@@ -1,6 +1,6 @@
 Package: tweedieDistr
 Title: Tweedie Distribution
-Version: 0.1.0
+Version: 0.1.1
 Authors@R:
     person("Stefano", "Damato", , "stefanodamato128@gmail.com", role = c("aut", "cre"))
 Description: Provides density, distribution function, quantile function, and random

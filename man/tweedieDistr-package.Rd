@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Provides density, distribution function, quantile function, and random generation for the Tweedie distribution under the compound Poisson-Gamma parameterisation with power parameter in (1, 2). The density is evaluated using the series expansion of Dunn and Smyth (2005) \doi{10.1007/s11222-005-4070-y}, implemented in C++ via 'Rcpp' and 'RcppArmadillo' for performance. A constructor compatible with the distributional package is also provided for use in tidy modelling workflows.
+Provides density, distribution function, quantile function, and random generation for the Tweedie distribution under the compound Poisson-Gamma parameterisation with power parameter in (1, 2). The density is evaluated using the series expansion of Dunn and Smyth (2005) \doi{10.1007/s11222-005-4070-y}, implemented in C++ via 'Rcpp' and 'RcppArmadillo' for performance. A constructor compatible with the 'distributional' package is also provided for use in tidy modelling workflows.
 }
 \seealso{
 Useful links:

@@ -40,6 +40,7 @@ static arma::vec log_A(const arma::vec& y, const arma::vec& phi,
     log_W_L = get_log_W(alpha, j_L, constant_log_W);
   }
 
+  // Compute the series on the log scale
   arma::vec j = arma::linspace(j_L, j_U, j_U - j_L + 1);
   arma::mat log_W = j * log_z.t();
   log_W.each_col() -= arma::lgamma(j + 1);
@@ -64,11 +65,18 @@ arma::vec tweedieDensity(arma::vec x, arma::vec mean, arma::vec dispersion,
   mean       = recycle_to_length(mean,       l, "mean");
   dispersion = recycle_to_length(dispersion, l, "dispersion");
   power      = recycle_to_length(power,      l, "power");
-  arma::vec log_p(l, arma::fill::none);
+  
+  // Initialise to NaN so that any non-finite input (e.g. NaN) propagates.
+  arma::vec log_p(l);
+  log_p.fill(arma::datum::nan);
 
-  // x < 0: density is 0
+  // x < 0 (including -Inf): density is 0
   arma::uvec neg_idx = arma::find(x < 0);
   if (!neg_idx.is_empty()) log_p(neg_idx).fill(-arma::datum::inf);
+
+  // x = +Inf: density is 0 (deep in the tail)
+  arma::uvec posinf_idx = arma::find(x == arma::datum::inf);
+  if (!posinf_idx.is_empty()) log_p(posinf_idx).fill(-arma::datum::inf);
 
   // x = 0: density is exp(-lambda)
   arma::uvec zero_idx = arma::find(x == 0);
@@ -78,8 +86,10 @@ arma::vec tweedieDensity(arma::vec x, arma::vec mean, arma::vec dispersion,
         (dispersion(zero_idx) % (2 - power(zero_idx)));
   }
 
-  // x > 0: series expansion (Dunn & Smyth 2005)
-  arma::uvec pos_idx = arma::find(x > 0);
+  // x > 0 and finite: series expansion (Dunn & Smyth 2005). Restricting to
+  // finite x keeps `j_max` finite, so the double->int conversion in log_A()
+  // is well defined.
+  arma::uvec pos_idx = arma::find((x > 0) % (x < arma::datum::inf));
   if (!pos_idx.is_empty()) {
     arma::vec x_p    = x(pos_idx);
     arma::vec mu_p   = mean(pos_idx);
