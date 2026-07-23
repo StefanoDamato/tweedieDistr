@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/StefanoDamato/tweedieDistr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/StefanoDamato/tweedieDistr/actions/workflows/R-CMD-check.yaml)
-[![Codecov test coverage](https://codecov.io/gh/StefanoDamato/tweedieDistr/branch/main/graph/badge.svg)](https://codecov.io/gh/StefanoDamato/tweedieDistr)
+[![Codecov test coverage](https://codecov.io/gh/StefanoDamato/tweedieDistr/branch/main/graph/badge.svg)](https://app.codecov.io/gh/StefanoDamato/tweedieDistr)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/tweedieDistr)](https://CRAN.R-project.org/package=tweedieDistr)
 [![Lifecycle:
