@@ -61,17 +61,17 @@ static arma::vec solver_bisection(const arma::vec& q, const arma::vec& lambda,
       conv_mask(i) = (std::abs(f_mid(i)) < tol) ||
                     (bracket(i) < tol * (1.0 + x_mid_a(i)));
     }
+
+    arma::uvec mid_neg = arma::find(f_mid < 0);
+    if (!mid_neg.is_empty()) x_L.elem(active.elem(mid_neg)) = x_mid_a.elem(mid_neg);
+    arma::uvec mid_pos = arma::find(f_mid > 0);
+    if (!mid_pos.is_empty()) x_U.elem(active.elem(mid_pos)) = x_mid_a.elem(mid_pos);
+
     arma::uvec converged = arma::find(conv_mask);
     if (!converged.is_empty()) {
       active = active.elem(arma::find(conv_mask == 0));
       if (active.is_empty()) break;
     }
-
-    arma::uvec mid_neg = arma::find(f_mid < 0);
-    if (!mid_neg.is_empty()) x_L.elem(active.elem(mid_neg)) = x_mid.elem(mid_neg);
-
-    arma::uvec mid_pos = arma::find(f_mid > 0);
-    if (!mid_pos.is_empty()) x_U.elem(active.elem(mid_pos)) = x_mid.elem(mid_pos);
   }
 
   arma::vec result = x_mid;
