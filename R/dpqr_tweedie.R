@@ -59,7 +59,6 @@ rtweedie <- function(n, mean = 1, dispersion = 1, power = 1.5) {
 #' @export
 dtweedie <- function(x, mean = 1, dispersion = 1, power = 1.5, log = FALSE) {
   out <- as.vector(tweedieDensity(x, mean, dispersion, power, log))
-  # tweedieDensity returns NaN for x = +Inf; the true limit is 0
   inf_pos <- is.infinite(x) & x > 0
   out[inf_pos] <- if (log) -Inf else 0
   out
@@ -88,7 +87,6 @@ qtweedie <- function(p, mean = 1, dispersion = 1, power = 1.5, lower.tail = TRUE
     p <- 1 - p
   }
   out <- as.vector(tweedieInvCDF(p, mean, dispersion, power))
-  # tweedieInvCDF cannot converge to +Inf; handle the p = 1 boundary explicitly
   out[p >= 1] <- Inf
   out
 }
