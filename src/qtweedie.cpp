@@ -173,8 +173,12 @@ static arma::vec solver_Newton_Raphson(const arma::vec& q,
   const double tol      = 1e-8;
   const int    max_iter = 20;
 
-  // Compute an initial guess for x
-  arma::vec x0 = mean + 2 * arma::sqrt(dispersion % arma::pow(mean, power)) % (2 * q - 1);
+  // Compute an initial guess from a typical jump count and its gamma quantile
+  arma::vec x0(n);
+  for (int i = 0; i < n; ++i) {
+    double n_hat = std::max(1.0, std::round(R::qpois(q(i), lambda(i), 1, 0)));
+    x0(i) = R::qgamma(q(i), n_hat * alpha(i), 1.0 / beta(i), 1, 0);
+  }
   arma::uvec neg0 = arma::find(x0 <= 0);
   if (!neg0.is_empty()) x0.elem(neg0) = mean.elem(neg0);
   x0 = arma::clamp(x0, tol, 1 / tol);
