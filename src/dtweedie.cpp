@@ -5,6 +5,11 @@ using namespace Rcpp;
 using namespace arma;
 
 
+// Terms beyond LOG_TOL log-units below the peak contribute less than machine
+// epsilon (exp(-37) ~ 8.5e-17) and are dropped from the series.
+static const double LOG_TOL = 37.0;
+
+
 // Compute the series expansion in log(A)
 static arma::vec log_A(const arma::vec& y, const arma::vec& phi,
                         const arma::vec& rho) {
@@ -56,7 +61,6 @@ static arma::vec log_A(const arma::vec& y, const arma::vec& phi,
       return static_cast<double>(j) * lz - lg1j - lgaj;
     };
 
-    // For each item take the rounded j_max
     for (arma::uword k = 0; k < idx.n_elem; ++k) {
       const double lz = log_z(k);
       arma::uword jstar = static_cast<arma::uword>(

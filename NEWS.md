@@ -1,6 +1,6 @@
 # tweedieDistr 0.2.0
 
-* Speedup in `dtweedie()` and `qtweedie`.
+* Implemented speedup in `dtweedie()` function.
 
 # tweedieDistr 0.1.1
 
