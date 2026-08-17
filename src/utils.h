@@ -1,7 +1,7 @@
 #pragma once
 #include <RcppArmadillo.h>
 
-// Recycle x to length l; errors if x is neither length 1 nor length l.
+// Recycle a vector to match a given length
 arma::vec recycle_to_length(const arma::vec& x, int l, const std::string& name);
 
 // Vectorised wrappers around R's scalar dpois / pgamma.

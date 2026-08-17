@@ -61,3 +61,6 @@ time_tests/
 
 # GitHub Actions
 /github/
+
+# other
+data_raw/cran_downloads.R
