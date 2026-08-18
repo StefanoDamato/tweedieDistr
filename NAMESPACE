@@ -16,13 +16,17 @@ export(ptweedie)
 export(qtweedie)
 export(rtweedie)
 importFrom(Rcpp,sourceCpp)
-importFrom(distributional,covariance)
-importFrom(distributional,generate)
-importFrom(distributional,kurtosis)
-importFrom(distributional,new_dist)
-importFrom(distributional,skewness)
+importFrom(distributional,
+  covariance,
+  generate,
+  kurtosis,
+  new_dist,
+  skewness
+)
 importFrom(rlang,abort)
-importFrom(stats,density)
-importFrom(stats,rgamma)
-importFrom(stats,rpois)
+importFrom(stats,
+  density,
+  rgamma,
+  rpois
+)
 useDynLib(tweedieDistr, .registration = TRUE)
