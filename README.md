@@ -78,7 +78,7 @@ qtweedie(c(0.25, 0.5, 0.75, 0.9), mean = 1, dispersion = 2, power = 1.2)
 
 # random samples
 rtweedie(4, mean = 1, dispersion = 2, power = 1.2)
-#> [1] 0.6454074 0.0000000 1.0381130 0.0000000
+#> [1] 0.0000000 2.4970908 0.9598658 0.0000000
 ```
 
 ## Mathematical background
@@ -103,6 +103,13 @@ e^{-\lambda}$. The density for $x > 0$ is evaluated via the series
 expansion of Dunn & Smyth (2005), implemented in C++ through
 [Rcpp](https://www.rcpp.org/) and
 [RcppArmadillo](https://github.com/RcppCore/RcppArmadillo).
+
+## Acknowledgements
+
+Work on this package was supported by the Swiss National Science
+Foundation (SNSF) under grant number 200021_212164 ([“Probabilistic
+Forecasting: Global Models, Gaussian Processes and
+Hierarchies”](https://data.snf.ch/grants/grant/212164)).
 
 ## Contributors
 
